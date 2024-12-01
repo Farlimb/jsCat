@@ -1,0 +1,13 @@
+Hra umožňujúca nakŕmenie, pohladkanie a sledovanie lasera mačkou Whisker
+
+nakrmenie - vyber niekolko jedal, po kliknuti na nich macka 
+chrume a potom sa nejak zatvári (napriklad ryba, granule, citron). 
+Asi nejake PNGcka stacia (zmenime texturu). Bol by nejaky hunger bar a dal by sa resetovat.
+Ak by bol plny, neda sa uz nakrmit macku iba resetovat. Aj nejake zvuky
+by boli dobre
+
+pohladkanie - vyda zvuk a zatvari sa nejak. Nejaky love bar
+
+sledovanie lasera - len kukaju oci na laser, popripade cela macka lmao 
+(asi by bola nejaka fixnuta trajektoria pred mackou kde by laser siel)
+
