@@ -129,16 +129,18 @@ function addObjects(){
         0.5,0.5,0.5,
         0,-0.2,0);
 
+    createCat();
 
-    var geometryCube = new THREE.BoxGeometry( 1, 1, 1 );
-    var cubeTexture = new THREE.ImageUtils.loadTexture(
-        'texture/lirkis.jpg' );
-    var materialCube = new THREE.MeshBasicMaterial( {
-        map: cubeTexture,
-        side: THREE.DoubleSide} );
-    cube = new THREE.Mesh( geometryCube, materialCube );
-    cube.position.set(0, 0, 0);
-    scene.add( cube );
+
+    // var geometryCube = new THREE.BoxGeometry( 1, 1, 1 );
+    // var cubeTexture = new THREE.ImageUtils.loadTexture(
+    //     'texture/lirkis.jpg' );
+    // var materialCube = new THREE.MeshBasicMaterial( {
+    //     map: cubeTexture,
+    //     side: THREE.DoubleSide} );
+    // cube = new THREE.Mesh( geometryCube, materialCube );
+    // cube.position.set(0, 0, 0);
+    // scene.add( cube );
 
     //Pridanie fragmentu pre objekt kocky
 
@@ -228,4 +230,83 @@ function loadObjWithMTL(objPath, MTLpath, scalex, scaley, scalez,
             scene.add( objcar );
         });
     });
+}
+
+function createCat() {
+    const catGroup = new THREE.Group();
+
+    // Materials
+    const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x999999 });
+    const earMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+
+    // Body
+    const bodyGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1.5, 16);
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.rotation.z = THREE.Math.degToRad(90) ;
+    catGroup.add(body);
+
+    // Head
+    const headGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+    const head = new THREE.Mesh(headGeometry, bodyMaterial);
+    head.position.set(0.9, 0, 0);
+    catGroup.add(head);
+
+    // Ears
+    const earGeometry = new THREE.ConeGeometry(0.1, 0.3, 6);
+    const leftEar = new THREE.Mesh(earGeometry, earMaterial);
+    leftEar.position.set(1.0, 0.3, 0.25);
+    leftEar.rotation.x = THREE.Math.degToRad(45) // Correct orientation of the ear
+    //leftEar.rotation.x = Math.PI; // Ensure the cone points upwards
+    //leftEar.rotation.x = THREE.Math.degToRad(45) ;
+    //leftEar.rotation.y = THREE.Math.degToRad(45) ;
+    catGroup.add(leftEar);
+
+    //const rightEar = leftEar.clone();
+
+    const rightEar = new THREE.Mesh(earGeometry, earMaterial);
+    rightEar.position.set(1.0, 0.3, -0.25);
+    //rightEar.rotation.z = Math.PI; // Correct orientation of the ear
+    rightEar.rotation.x = THREE.Math.degToRad(-45) ;
+    catGroup.add(rightEar);
+
+    // Tail
+    const tailGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 16);
+    const tail = new THREE.Mesh(tailGeometry, bodyMaterial);
+    tail.position.set(-0.9, 0, 0);
+    tail.rotation.z = Math.PI / 4;
+    catGroup.add(tail);
+
+    // Eyes
+    const eyeGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    leftEye.position.set(1.1, 0.1, 0.15);
+    leftEye.scale.set(1.5, 1.5, 1); // Adjust eye size to make them more visible
+    catGroup.add(leftEye);
+
+    const rightEye = leftEye.clone();
+    rightEye.position.set(1.1, 0.1, -0.15);
+    catGroup.add(rightEye);
+
+    // Legs
+    const legGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.5, 16);
+    const frontLeftLeg = new THREE.Mesh(legGeometry, bodyMaterial);
+    frontLeftLeg.position.set(0.5, -0.75, 0.2);
+    catGroup.add(frontLeftLeg);
+
+    const frontRightLeg = frontLeftLeg.clone();
+    frontRightLeg.position.set(0.5, -0.75, -0.2);
+    catGroup.add(frontRightLeg);
+
+    const backLeftLeg = frontLeftLeg.clone();
+    backLeftLeg.position.set(-0.5, -0.75, 0.2);
+    catGroup.add(backLeftLeg);
+
+    const backRightLeg = frontLeftLeg.clone();
+    backRightLeg.position.set(-0.5, -0.75, -0.2);
+    catGroup.add(backRightLeg);
+
+    // Position cat on the scene
+    catGroup.position.set(0, 0.75, 0);
+    scene.add(catGroup);
 }
