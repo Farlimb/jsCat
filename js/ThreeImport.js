@@ -49,7 +49,7 @@ function render() {
 
     scene.add(curveObject);
 
-    PosIndex++;
+    /*PosIndex++;
     if (PosIndex > 10000) { PosIndex = 0;}
     var camPos = curve.getPoint(PosIndex / 1000);
     var camRot = curve.getTangent(PosIndex / 1000);
@@ -61,7 +61,7 @@ function render() {
     spotlight.rotation.z = camRot.z;
     spotlight.lookAt(curve.getPoint((PosIndex+1) / 1000));
 
-    
+
 
     objectcar.position.x = camPos.x;
     objectcar.position.y = camPos.y;
@@ -77,7 +77,7 @@ function render() {
     objcar.rotation.x = camRot.x;
     objcar.rotation.y = camRot.y;
     objcar.rotation.z = camRot.z;
-    objcar.lookAt(curve.getPoint((PosIndex+1) / 1000));
+    objcar.lookAt(curve.getPoint((PosIndex+1) / 1000));*/
 
     update();
     renderer.shadowMap.enabled = true;
@@ -111,14 +111,14 @@ function addObjects(){
     sphere.position.set(0, 0, 0);
     scene.add( sphere );
 
-    loadOBJectsStandard( 2,-0.5,0,
+    /*loadOBJectsStandard( 2,-0.5,0,
         'models/car/Pony_cartoon.obj',
         0.003,0.003,0.003,
         "models/car/Body_dDo_d_orange.jpg",
         "white"
-    );
+    );*/
 
-    loadOBJectsPhong( -2,-0.5,0,
+  /*  loadOBJectsPhong( -2,-0.5,0,
         'models/car/Pony_cartoon.obj',
         0.003,0.003,0.003,
         "models/car/Body_dDo_d_orange.jpg",
@@ -127,7 +127,7 @@ function addObjects(){
     loadObjWithMTL("models/lirkis_car/lirkis_car.obj",
         "models/lirkis_car/lirkis_car.mtl",
         0.5,0.5,0.5,
-        0,-0.2,0);
+        0,-0.2,0);*/
 
     createCat();
 
@@ -153,12 +153,13 @@ function addObjects(){
 
 function addLights(){
 
-    //var ambientLight = new THREE.AmbientLight(0x7F7F7F);
-    //scene.add(ambientLight);
+    var ambientLight = new THREE.AmbientLight(0x7F7F7F);
+    scene.add(ambientLight);
 
     spotlight = new THREE.SpotLight('rgb(255,255,255)');
     spotlight.angle = Math.PI/1;
-    spotlight.position.set(0, 4, 2);spotlight.intensity = 0.5;
+    spotlight.position.set(0, 4, 2);
+    spotlight.intensity = 2;
     spotlight.castShadow = true;
     scene.add(spotlight);
     spotlight.penumbra = 1;
@@ -235,78 +236,328 @@ function loadObjWithMTL(objPath, MTLpath, scalex, scaley, scalez,
 function createCat() {
     const catGroup = new THREE.Group();
 
-    // Materials
-    const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x999999 });
-    const earMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
-    const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+    // Load texture
+    const textureLoader = new THREE.TextureLoader();
+    const catFurTexture = textureLoader.load('texture/catFur.jpg');
+    //const catFace = textureLoader.load('texture/Designer.png');
 
-    // Body
-    const bodyGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1.5, 16);
+    // Materials
+    const bodyMaterial = new THREE.MeshStandardMaterial({
+        map: catFurTexture,
+        roughness: 0.7,
+        metalness: 0.1
+    });
+   /* const faceMaterial = new THREE.MeshStandardMaterial({
+        map: catFace,
+        roughness: 0.7,
+        metalness: 0.1
+    });*/
+    const eyeMaterial = new THREE.MeshStandardMaterial({
+        color: 0x2E5339,
+        roughness: 0.2,
+        metalness: 0.8
+    });
+    const noseMaterial = new THREE.MeshStandardMaterial({
+        color: 0xFFA7A7,
+        roughness: 0.3,
+        metalness: 0.1
+    });
+
+    // Body (using ellipsoid shape)
+    const bodyGeometry = new THREE.SphereGeometry(0.5, 32, 32);
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.rotation.z = THREE.Math.degToRad(90) ;
+    body.scale.set(1.2, 0.8, 0.9);
     catGroup.add(body);
 
-    // Head
-    const headGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+    // Head (slightly smaller sphere)
+    const headGeometry = new THREE.SphereGeometry(0.4, 32, 32);
     const head = new THREE.Mesh(headGeometry, bodyMaterial);
-    head.position.set(0.9, 0, 0);
+    head.position.set(0.6, 0.2, 0);
+    head.scale.set(0.8, 0.8, 0.8);
     catGroup.add(head);
 
-    // Ears
-    const earGeometry = new THREE.ConeGeometry(0.1, 0.3, 6);
-    const leftEar = new THREE.Mesh(earGeometry, earMaterial);
-    leftEar.position.set(1.0, 0.3, 0.25);
-    leftEar.rotation.x = THREE.Math.degToRad(45) // Correct orientation of the ear
-    //leftEar.rotation.x = Math.PI; // Ensure the cone points upwards
-    //leftEar.rotation.x = THREE.Math.degToRad(45) ;
-    //leftEar.rotation.y = THREE.Math.degToRad(45) ;
+   /* // Face
+    const faceGeometry = new THREE.PlaneGeometry(0.4, 0.4);
+    const face = new THREE.Mesh(faceGeometry, faceMaterial);
+    face.position.set(0.92, 0.2, 0);
+    face.rotation.y = Math.PI * 0.5;
+    catGroup.add(face);*/
+
+    // Ears (triangular shape)
+    const earGeometry = new THREE.ConeGeometry(0.15, 0.3, 4);
+    const leftEar = new THREE.Mesh(earGeometry, bodyMaterial);
+    leftEar.position.set(0.7, 0.5, 0.2);
+    leftEar.rotation.x = THREE.Math.degToRad(-30);
+    leftEar.rotation.z = THREE.Math.degToRad(-20);
     catGroup.add(leftEar);
 
-    //const rightEar = leftEar.clone();
-
-    const rightEar = new THREE.Mesh(earGeometry, earMaterial);
-    rightEar.position.set(1.0, 0.3, -0.25);
-    //rightEar.rotation.z = Math.PI; // Correct orientation of the ear
-    rightEar.rotation.x = THREE.Math.degToRad(-45) ;
+    const rightEar = leftEar.clone();
+    rightEar.position.set(0.7, 0.5, -0.2);
+    rightEar.rotation.x = THREE.Math.degToRad(30);
+    rightEar.rotation.z = THREE.Math.degToRad(-20);
     catGroup.add(rightEar);
 
-    // Tail
-    const tailGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 16);
-    const tail = new THREE.Mesh(tailGeometry, bodyMaterial);
-    tail.position.set(-0.9, 0, 0);
-    tail.rotation.z = Math.PI / 4;
-    catGroup.add(tail);
-
-    // Eyes
-    const eyeGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    // Eyes (almond shape by scaling spheres)
+    const eyeGeometry = new THREE.SphereGeometry(0.06, 32, 32);
     const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    leftEye.position.set(1.1, 0.1, 0.15);
-    leftEye.scale.set(1.5, 1.5, 1); // Adjust eye size to make them more visible
+    leftEye.position.set(0.85, 0.25, 0.15);
+    leftEye.scale.set(1, 1.5, 1);
     catGroup.add(leftEye);
 
     const rightEye = leftEye.clone();
-    rightEye.position.set(1.1, 0.1, -0.15);
+    rightEye.position.set(0.85, 0.25, -0.15);
     catGroup.add(rightEye);
 
+    // Nose
+    const noseGeometry = new THREE.ConeGeometry(0.05, 0.05, 3);
+    const nose = new THREE.Mesh(noseGeometry, noseMaterial);
+    nose.position.set(0.95, 0.15, 0);
+    nose.rotation.x = Math.PI * 0.5;
+    catGroup.add(nose);
+    const mouthCurve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(0.92, 0.1, -0.1),
+        new THREE.Vector3(0.95, 0.05, 0),
+        new THREE.Vector3(0.92, 0.1, 0.1)
+    );
+    const mouthPoints = mouthCurve.getPoints(50);
+    const mouthGeometry = new THREE.BufferGeometry().setFromPoints(mouthPoints);
+    const mouthMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+    const mouth = new THREE.Line(mouthGeometry, mouthMaterial);
+    catGroup.add(mouth);
+
+    // Whiskers
+    const whiskerMaterial = new THREE.LineBasicMaterial({
+        color: 0xFFFFFF,
+        linewidth: 1
+    });
+
+    // Function to create a whisker
+    function createWhisker(startX, startY, startZ, length, angle, isRight) {
+        const points = [
+            new THREE.Vector3(startX, startY, startZ),
+            new THREE.Vector3(
+                startX,
+                startY + length * Math.sin(angle) * 0.2, // Slight upward curve
+                startZ + (isRight ? 1 : -1) * length * Math.cos(angle) // Direction based on side
+            )
+        ];
+        const whiskerGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        return new THREE.Line(whiskerGeometry, whiskerMaterial);
+    }
+
+// Whisker parameters
+    const whiskerSets = [
+        { y: 0.2, length: 0.6, angles: [-0.1, 0, 0.1] },  // Top set
+        { y: 0.15, length: 0.5, angles: [-0.15, 0, 0.15] }, // Middle set
+        { y: 0.1, length: 0.4, angles: [-0.2, 0, 0.2] }   // Bottom set
+    ];
+
+// Add whiskers on both sides
+    whiskerSets.forEach(set => {
+        set.angles.forEach(angle => {
+            // Right side whiskers
+            const rightWhisker = createWhisker(
+                0.88,            // x position
+                set.y,         // y position
+                0.1,           // z position (right side)
+                set.length,    // length
+                angle,         // angle
+                true          // is right side
+            );
+            catGroup.add(rightWhisker);
+
+            // Left side whiskers
+            const leftWhisker = createWhisker(
+                0.88,            // x position
+                set.y,         // y position
+                -0.1,          // z position (left side)
+                set.length,    // length
+                angle,         // same angle
+                false         // is left side
+            );
+            catGroup.add(leftWhisker);
+        });
+    });
+
+    // Inner mouth details
+    const innerMouthGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0.92, 0.08, -0.05),
+        new THREE.Vector3(0.92, 0.08, 0.05)
+    ]);
+    const innerMouth = new THREE.Line(
+        innerMouthGeometry,
+        new THREE.LineBasicMaterial({ color: 0x000000 })
+    );
+    // Tail (curved cylinder)
+    const tailCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-0.6, 0, 0),
+        new THREE.Vector3(-0.8, 0.2, 0),
+        new THREE.Vector3(-1.0, 0.4, 0),
+        new THREE.Vector3(-1.1, 0.3, 0)
+    ]);
+    const tailGeometry = new THREE.TubeGeometry(tailCurve, 20, 0.06, 8, false);
+    const tail = new THREE.Mesh(tailGeometry, bodyMaterial);
+    catGroup.add(tail);
+
     // Legs
-    const legGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.5, 16);
+    const legGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.5, 16);
+
+    // Front legs
     const frontLeftLeg = new THREE.Mesh(legGeometry, bodyMaterial);
-    frontLeftLeg.position.set(0.5, -0.75, 0.2);
+    frontLeftLeg.position.set(0.3, -0.5, 0.2);
     catGroup.add(frontLeftLeg);
 
     const frontRightLeg = frontLeftLeg.clone();
-    frontRightLeg.position.set(0.5, -0.75, -0.2);
+    frontRightLeg.position.set(0.3, -0.5, -0.2);
     catGroup.add(frontRightLeg);
 
-    const backLeftLeg = frontLeftLeg.clone();
-    backLeftLeg.position.set(-0.5, -0.75, 0.2);
+    // Back legs (slightly longer)
+    const backLegGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.55, 16);
+    const backLeftLeg = new THREE.Mesh(backLegGeometry, bodyMaterial);
+    backLeftLeg.position.set(-0.3, -0.5, 0.2);
     catGroup.add(backLeftLeg);
 
-    const backRightLeg = frontLeftLeg.clone();
-    backRightLeg.position.set(-0.5, -0.75, -0.2);
+    const backRightLeg = backLeftLeg.clone();
+    backRightLeg.position.set(-0.3, -0.5, -0.2);
     catGroup.add(backRightLeg);
 
+    // Paws
+    const pawGeometry = new THREE.SphereGeometry(0.09, 16, 16);
+    const pawMaterial = new THREE.MeshStandardMaterial({
+        color: bodyMaterial.color,
+        roughness: 0.8,
+        metalness: 0.1
+    });
+
+    // Add paws to each leg
+    const positions = [
+        [0.3, -0.75, 0.2],  // front left
+        [0.3, -0.75, -0.2], // front right
+        [-0.3, -0.75, 0.2], // back left
+        [-0.3, -0.75, -0.2] // back right
+    ];
+
+    positions.forEach(pos => {
+        const paw = new THREE.Mesh(pawGeometry, pawMaterial);
+        paw.position.set(...pos);
+        paw.scale.set(1, 0.4, 1.2);
+        catGroup.add(paw);
+    });
+
     // Position cat on the scene
-    catGroup.position.set(0, 0.75, 0);
+    catGroup.position.set(0, 1, 0);
     scene.add(catGroup);
+    const catParts = {
+        body: body,
+        head: head,
+        frontLegs: {
+            left: frontLeftLeg,
+            right: frontRightLeg
+        },
+        backLegs: {
+            left: backLeftLeg,
+            right: backRightLeg
+        },
+        tail: tail
+    };
+
+    // Animation states
+    const states = {
+        standing: {
+            body: { position: { y: 0 }, scale: { y: 0.8, z: 0.9 } },
+            head: { position: { y: 0.2 } },
+            backLegs: {
+                rotation: { x: 0 },
+                position: { y: -0.5, x: -0.3 }
+            },
+            tail: { rotation: { x: 0 } }
+        },
+        sitting: {
+            body: { position: { y: -0.3 }, scale: { y: 0.6, z: 1.1 } },
+            head: { position: { y: 0.1 } },
+            backLegs: {
+                rotation: { x: Math.PI * 0.25 },
+                position: { y: -0.3, x: -0.4 }
+            },
+            tail: { rotation: { x: -Math.PI * 0.2 } }
+        }
+    };
+
+    let isAnimating = false;
+    let isSitting = false;
+    const animationDuration = 1000; // 1 second
+    let animationStartTime = 0;
+
+    function animate(currentTime) {
+        if (!isAnimating) return;
+
+        const elapsed = currentTime - animationStartTime;
+        const progress = Math.min(elapsed / animationDuration, 1);
+
+        // Lerp function for smooth interpolation
+        const lerp = (start, end, t) => start + (end - start) * t;
+
+        const currentState = isSitting ? states.standing : states.sitting;
+        const targetState = isSitting ? states.sitting : states.standing;
+
+        // Animate body
+        catParts.body.position.y = lerp(currentState.body.position.y, targetState.body.position.y, progress);
+        catParts.body.scale.y = lerp(currentState.body.scale.y, targetState.body.scale.y, progress);
+        catParts.body.scale.z = lerp(currentState.body.scale.z, targetState.body.scale.z, progress);
+
+        // Animate head
+        catParts.head.position.y = lerp(currentState.head.position.y, targetState.head.position.y, progress);
+
+        // Animate back legs
+        const backLegRotation = lerp(currentState.backLegs.rotation.x, targetState.backLegs.rotation.x, progress);
+        const backLegPosY = lerp(currentState.backLegs.position.y, targetState.backLegs.position.y, progress);
+        const backLegPosX = lerp(currentState.backLegs.position.x, targetState.backLegs.position.x, progress);
+
+        catParts.backLegs.left.rotation.x = backLegRotation;
+        catParts.backLegs.right.rotation.x = backLegRotation;
+        catParts.backLegs.left.position.y = backLegPosY;
+        catParts.backLegs.right.position.y = backLegPosY;
+        catParts.backLegs.left.position.x = backLegPosX;
+        catParts.backLegs.right.position.x = backLegPosX;
+
+        // Animate tail
+        catParts.tail.rotation.x = lerp(currentState.tail.rotation.x, targetState.tail.rotation.x, progress);
+
+        if (progress === 1) {
+            isAnimating = false;
+            isSitting = !isSitting;
+        }
+    }
+
+    // Add the animation to the render loop
+    function updateAnimation(time) {
+        if (isAnimating) {
+            animate(time);
+        }
+    }
+
+    // Toggle sitting/standing
+    function toggleSit() {
+        if (!isAnimating) {
+            isAnimating = true;
+            animationStartTime = performance.now();
+        }
+    }
+
+    // Add the animation update to your render loop
+    const originalRender = render;
+    render = function() {
+        updateAnimation(performance.now());
+        originalRender();
+    };
+
+    // Add keyboard controls
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 's') {
+            toggleSit();
+        }
+    });
+
+    return catGroup;
+    //return catGroup; // Return the group in case you need to animate it later
 }
