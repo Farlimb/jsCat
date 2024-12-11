@@ -16,12 +16,17 @@ var geometry = new THREE.BufferGeometry().setFromPoints( points );
 var material = new THREE.LineBasicMaterial( { color : 0xff0000 });
 var curveObject = new THREE.Line( geometry, material );
 var PosIndex = 0;
+var gui;
+//var progressController;
 
 
 init();
 render();
 
 function init() {
+
+    gui = new dat.GUI();
+
 
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 1000 );
     camera.position.set(0, 0, 5);
@@ -40,6 +45,7 @@ function init() {
 }
 
 function render() {
+    //gui.update();
 
     requestAnimationFrame( render );
 
@@ -557,6 +563,26 @@ function createCat() {
             toggleSit();
         }
     });
+
+
+    const catControls = {
+        sit: toggleSit,
+        progress: 0, // Progress property
+    };
+    gui.add(catControls, 'sit').name('Sit/Stand');
+
+    const progressController = gui.add(catControls, 'progress', 0, 100).name('Hunger');
+
+    const updateProgress = () => {
+        if (catControls.progress < 100) {
+            catControls.progress += 10; // Increment progress by 10
+        } else {
+            catControls.progress = 0; // Reset progress when full
+        }
+        progressController.updateDisplay(); // Update the GUI display
+    };
+
+    gui.add({ click: updateProgress }, 'click').name('Feed');
 
     return catGroup;
     //return catGroup; // Return the group in case you need to animate it later
