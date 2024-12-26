@@ -25,7 +25,7 @@ function init() {
 
     gui = new dat.GUI();
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 1000 );
-    camera.position.set(0, 0, 5);
+    camera.position.set(3, 1.3, 1);
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth, window.innerHeight );
