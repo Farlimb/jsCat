@@ -11,3 +11,8 @@ pohladkanie - vyda zvuk a zatvari sa nejak. Nejaky love bar
 sledovanie lasera - len kukaju oci na laser, popripade cela macka lmao 
 (asi by bola nejaka fixnuta trajektoria pred mackou kde by laser siel)
 
+Este by bolo fajn dat moznost si menit texturu macky
+Macka by mala menit ksicht podla svojho baru
+Jedlo by som dal ako spawn a musel by ho dat macke na zjedenie
+Treba pridat ten laser
+Optional by som pridal zvuky
