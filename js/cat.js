@@ -297,7 +297,7 @@ function createCat() {
         }
     }
 
-    // Add the animation update to your render loop
+    // added animation to renderer
     const originalRender = render;
     render = function() {
         updateAnimation(performance.now());
