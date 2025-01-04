@@ -24,10 +24,49 @@ const textureLoader = new THREE.TextureLoader();
 const catFurTexture1 = textureLoader.load('texture/catFur.jpg');
 const catFurTexture2 = textureLoader.load('texture/catFur2.jpg');
 
+const environments = [
+    {
+        floorTexture: 'texture/grass.jpg',
+        skyTexture: 'texture/livingroom.png'
+    },
+    {
+        floorTexture: 'texture/blackgrass.jpg',
+        skyTexture: 'texture/night.png'
+    },
+    {
+        floorTexture: 'texture/bricks.jpg',
+        skyTexture: 'texture/cityy.jpg'
+    }
+];
+
 const textureControls = {
     currentTexture: 'Orange Cat',
-    options: ['Orange Cat', 'Gray Cat']
+    options: ['Orange Cat', 'Gray Cat'],
+    currentEnvironment: 'Outside',
+    environments: ['Outside', 'Night out', 'City']
 };
+
+function updateEnvironment(environmentIndex) {
+    const { floorTexture, skyTexture } = environments[environmentIndex];
+
+    const floorMaterial = plane.material;
+    floorMaterial.map = new THREE.TextureLoader().load(floorTexture);
+    floorMaterial.needsUpdate = true;
+
+    const skyMaterial = sphere.material;
+    skyMaterial.map = new THREE.TextureLoader().load(skyTexture);
+    skyMaterial.needsUpdate = true;
+}
+
+function changeEnvironment(enviro) {
+    if (enviro === 'Outside') {
+        updateEnvironment(0)
+    } else if (enviro === 'Night out') {
+        updateEnvironment(1)
+    } else {
+        updateEnvironment(2)
+    }
+}
 
 // Materials
 const bodyMaterial = new THREE.MeshStandardMaterial({
@@ -336,6 +375,11 @@ function createCat() {
         }}, 'pet').name('Pet');
 
     gui.add({ click: updateProgress }, 'click').name('Feed');
+
+    changeEnvironment('Outside')
+    gui.add(textureControls, 'currentEnvironment', textureControls.environments)
+        .name('Environment')
+        .onChange(changeEnvironment)
 
     return catGroup;
     //return catGroup; // Return the group in case you need to animate it later

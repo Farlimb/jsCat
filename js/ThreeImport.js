@@ -71,7 +71,7 @@ function addObjects(){
     scene.add( plane );
 
     var geometrySphere = new THREE.SphereGeometry( 100, 100, 100 );
-    var sphereTexture = new THREE.ImageUtils.loadTexture( 'texture/room.jpg' );
+    var sphereTexture = new THREE.ImageUtils.loadTexture( 'texture/cityy.jpg' );
     var materialSphere = new THREE.MeshBasicMaterial( {map: sphereTexture, transparent: true, side: THREE.DoubleSide} );
     sphere = new THREE.Mesh( geometrySphere, materialSphere );
     sphere.position.set(0, 0, 0);
