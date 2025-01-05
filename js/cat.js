@@ -4,6 +4,9 @@ const mouse = new THREE.Vector2();
 let isPetting = false;
 let lastPetTime = 0;
 let petCooldown = 100;
+let obj;
+let objects = [];
+let objAnimation;
 
 let isAnimating = false;
 let isSitting = false;
@@ -23,6 +26,8 @@ let comfortController;
 const textureLoader = new THREE.TextureLoader();
 const catFurTexture1 = textureLoader.load('texture/catFur.jpg');
 const catFurTexture2 = textureLoader.load('texture/catFur2.jpg');
+
+const heartTexture = new THREE.TextureLoader().load('texture/heart.png');
 
 const environments = [
     {
@@ -46,6 +51,28 @@ const textureControls = {
     environments: ['Outside', 'Night out', 'City']
 };
 
+const updateProgress = (food) => {
+    if (catControls.hunger < 100) {
+        if(food === "apple"){
+            catControls.hunger += 10;
+
+        }
+        else if(food === "milk"){
+            catControls.hunger += 20;
+
+        }
+        else{
+            catControls.hunger += 35;
+        }
+    }
+
+    if(catControls.hunger > 100){
+        catControls.hunger = 100;
+    }
+
+    progressController.updateDisplay();
+}
+
 function updateEnvironment(environmentIndex) {
     const { floorTexture, skyTexture } = environments[environmentIndex];
 
@@ -66,6 +93,49 @@ function changeEnvironment(enviro) {
     } else {
         updateEnvironment(2)
     }
+}
+
+function addHeartParticles(position, count = 10) {
+    const heartGeometry = new THREE.BufferGeometry();
+    // const heartMaterial = new THREE.PointsMaterial({
+    //     color: 0xFF69B4,
+    //     size: 0.2,
+    //     opacity: 0.8
+    // });
+
+    const heartMaterial = new THREE.PointsMaterial({
+        map: heartTexture,
+        color: 0xFFFFFF,
+        size: 0.2,
+        transparent: true
+    });
+
+    const heartPoints = [];
+
+    for (let i = 0; i < count; i++) {
+        const angle = Math.PI * 2 * (i / count);
+        const radius = 0.1 + Math.random() * 0.05;
+        const z = (16 * Math.pow(Math.sin(angle), 3)) * radius;
+        const y = (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * radius;
+        const x = (Math.random() - 0.5) * 0.1;
+
+        heartPoints.push(new THREE.Vector3(
+            position.x + x,
+            position.y + y,
+            position.z + z
+        ));
+    }
+
+    heartGeometry.setFromPoints(heartPoints);
+    const heartParticles = new THREE.Points(heartGeometry, heartMaterial);
+    scene.add(heartParticles);
+
+    // Remove particles after animation
+    setTimeout(() => {
+        scene.remove(heartParticles);
+        heartGeometry.dispose();
+        heartMaterial.dispose();
+    }, 1000);
 }
 
 // Materials
@@ -329,6 +399,12 @@ function createCat() {
         }
     }
 
+
+
+    // gui.add({ heartParticles: () => {
+    //         addHeartParticles(catGroup.position, 5);
+    //     }}, 'heartParticles').name('Heart Particles');
+
     // Add the animation to the render loop
     function updateAnimation(time) {
         if (isAnimating) {
@@ -349,37 +425,83 @@ function createCat() {
             toggleSit();
         }
     });
-    gui.add(catControls, 'sit').name('Sit/Stand');
+
 
     progressController = gui.add(catControls, 'hunger', 0, 100).name('Hunger');
-    const updateProgress = () => {
-        if (catControls.hunger < 100) {
-            catControls.hunger += 10;
-        } else {
-            catControls.hunger = 0; // Reset progress when full
-        }
-        progressController.updateDisplay();
-    }
 
-    gui.add(textureControls, 'currentTexture', textureControls.options)
+
+    comfortController = gui.add(catControls, 'comfort', 0, 100).name('Comfort');
+    // gui.add({ pet: () => {
+    //         if (catControls.comfort < 100) {
+    //             catControls.comfort += 10;
+    //         } else {
+    //             catControls.comfort = 0;
+    //         }
+    //         comfortController.updateDisplay();
+    //     }}, 'pet').name('Pet');
+
+    // gui.add({ click: updateProgress }, 'click').name('Feed');
+
+    gui.add(catControls, 'sit').name('Sit/Stand');
+
+    // Create the "Customization" folder
+    const customizationFolder = gui.addFolder('Customization');
+
+// Move the "Cat Texture" and "Environment" controls to the "Customization" folder
+    customizationFolder.add(textureControls, 'currentTexture', textureControls.options)
         .name('Cat Texture')
         .onChange(changeTexture);
-    comfortController = gui.add(catControls, 'comfort', 0, 100).name('Comfort');
-    const petButton = gui.add({ pet: () => {
-            if (catControls.comfort < 100) {
-                catControls.comfort += 10;
-            } else {
-                catControls.comfort = 0;
-            }
-            comfortController.updateDisplay();
-        }}, 'pet').name('Pet');
-
-    gui.add({ click: updateProgress }, 'click').name('Feed');
 
     changeEnvironment('Outside')
-    gui.add(textureControls, 'currentEnvironment', textureControls.environments)
+
+    customizationFolder.add(textureControls, 'currentEnvironment', textureControls.environments)
         .name('Environment')
-        .onChange(changeEnvironment)
+        .onChange(changeEnvironment);
+
+// Create the "Feed" folder
+    const feedFolder = gui.addFolder('Feed');
+
+// Move the "Apple", "Milk", and "Fish" controls to the "Feed" folder
+    feedFolder.add({ addObject: () => {
+            loadOBJectsStandard(
+                catGroup.position.x + 1, catGroup.position.y - 0.57, catGroup.position.z,
+                'models/food/apple1.obj',
+                0.003, 0.003, 0.003,
+                'models/food/apple.png',
+                'white',
+                0,
+                0.01,
+                0,
+                6,
+                "apple"
+            );
+        }}, 'addObject').name('Apple');
+
+    feedFolder.add({ addObject: () => {
+            loadObjWithMTL(
+                "models/food/milk.obj",
+                "models/food/milk.mtl",
+                0.02, 0.02, 0.02,
+                catGroup.position.x + 1, catGroup.position.y - 0.7, catGroup.position.z,
+                12,
+                "milk"
+            );
+        }}, 'addObject').name('Milk');
+
+    feedFolder.add({ addObject: () => {
+            loadOBJectsStandard(
+                catGroup.position.x + 1, catGroup.position.y - 0.6, catGroup.position.z,
+                'models/food/fish.obj',
+                0.06, 0.06, 0.06,
+                'models/food/fish.jpg',
+                'white',
+                THREE.Math.radToDeg(90),
+                0,
+                0.01,
+                30,
+                "fish"
+            );
+        }}, 'addObject').name('Fish');
 
     return catGroup;
     //return catGroup; // Return the group in case you need to animate it later
@@ -422,11 +544,11 @@ function toggleSit() {
 
 function updateStats() {
     if (catControls.hunger > 0) {
-        catControls.hunger -= 0.1;
+        catControls.hunger -= 0.005;
         progressController.updateDisplay();
     }
     if (catControls.comfort > 0) {
-        catControls.comfort -= 0.05;
+        catControls.comfort -= 0.005;
         comfortController.updateDisplay();
     }
 }
@@ -434,9 +556,10 @@ function updateStats() {
 function addPettingEffect(position) {
     const particleGeometry = new THREE.BufferGeometry();
     const particleMaterial = new THREE.PointsMaterial({
-        color: 0xFFFF00,
-        size: 0.05,
-        opacity: 0.5
+        map: heartTexture,
+        color: 0xFFFFFF,
+        size: 0.2,
+        transparent: true
     });
 
     const particle = new THREE.Vector3(
@@ -490,7 +613,7 @@ function checkPetting() {
 
     if (intersects.length > 0) {
         if (catControls.comfort < 100) {
-            catControls.comfort = Math.min(100, catControls.comfort + 2);
+            catControls.comfort = Math.min(100, catControls.comfort + 3);
             comfortController.updateDisplay();
         }
         lastPetTime = currentTime;
@@ -508,3 +631,82 @@ function changeTexture(textureName) {
     }
     bodyMaterial.needsUpdate = true;
 }
+
+function loadOBJectsStandard(x, y, z, path, scalex, scaley, scalez, texturePath, colorMaterial, rotation, first, second, particles, food) {
+    const loader = new THREE.OBJLoader();
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load(texturePath);
+    const material = new THREE.MeshStandardMaterial({
+        color: colorMaterial,
+        map: texture,
+        roughness: 0.05,
+        metalness: 0.45
+    });
+
+    loader.load(path, (object) => {
+        object.traverse((node) => {
+            if (node.isMesh) {
+                node.material = material;
+            }
+        });
+
+        object.position.set(x, y, z);
+        object.scale.set(scalex, scaley, scalez);
+        //object.rotation.x = Math.PI / 4;
+        object.rotation.x = rotation;
+
+        const rotationSpeed = 2.5; // Adjust the rotation speed as needed
+        const animate = () => {
+            object.rotation.y += rotationSpeed * first;
+            object.rotation.z += rotationSpeed * second;
+            //object.rotation.x += rotationSpeed * 0.01;
+            requestAnimationFrame(animate);
+        };
+        animate();
+
+        scene.add(object);
+        addHeartParticles(catGroup.position, particles);
+        updateProgress(food);
+
+        // Remove the object after 3 seconds
+        setTimeout(() => {
+            scene.remove(object);
+        }, 1000);
+
+
+    });
+}
+
+function loadObjWithMTL(objPath, MTLpath, scalex, scaley, scalez, posX, posY, posZ, particles, food) {
+    const mtlLoader = new THREE.MTLLoader();
+    mtlLoader.load(MTLpath, (materials) => {
+        materials.preload();
+
+        const objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials);
+        objLoader.load(objPath, (object) => {
+            object.position.set(posX, posY, posZ);
+            object.scale.set(scalex, scaley, scalez);
+            scene.add(object);
+            addHeartParticles(catGroup.position, particles);
+            updateProgress(food);
+
+            objects.push(object);
+
+            // Remove the object after 3 seconds
+            setTimeout(() => {
+                scene.remove(object);
+                objects.splice(objects.indexOf(object), 1);
+            }, 1000);
+        });
+    });
+}
+
+function animateObj() {
+    for (let i = 0; i < objects.length; i++) {
+        objects[i].rotation.y += 0.01;
+    }
+    requestAnimationFrame(animateObj);
+}
+
+animateObj()
