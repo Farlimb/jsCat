@@ -439,14 +439,33 @@ function createCat() {
         }
     });
 
+    loadRegObjWithMTL("models/tree4.obj",
+        "models/tree4.mtl",
+        1.3,1.3,1.3,
+        -6,-0.2,7, 30);
+    loadRegObjWithMTL("models/tree4.obj",
+        "models/tree4.mtl",
+        0.9,0.9,0.9,
+        -5,-0.2,-4, 15);
+    loadRegObjWithMTL("models/tree4.obj",
+        "models/tree4.mtl",
+        0.9,0.9,0.9,
+        -7,-0.2,-1, 10);
+    loadRegObjWithMTL("models/tree4.obj",
+        "models/tree4.mtl",
+        0.6,0.6,0.6,
+        1,-0.2,6, 25);
+    loadRegObjWithMTL("models/tree4.obj",
+        "models/tree4.mtl",
+        0.9,0.9,0.9,
+        1,-0.2,-7, 10);
+    loadRegObjWithMTL("models/tree4.obj",
+        "models/tree4.mtl",
+        1.3,1.3,1.3,
+        -6,-0.2,-7, 10);
 
     progressController = gui.add(catControls, 'hunger', 0, 100).name('Hunger');
-    const cursorFolder = gui.addFolder('Cursor Controls');
-    cursorFolder.add(cursorControls, 'showRedDot')
-        .name('Show Red Dot')
-        .onChange((value) => {
-            cursor.visible = value;
-        });
+
 
     comfortController = gui.add(catControls, 'comfort', 0, 100).name('Comfort');
     gui.add({ takeScreenshot }, 'takeScreenshot').name('Take Screenshot');
@@ -462,6 +481,13 @@ function createCat() {
     // gui.add({ click: updateProgress }, 'click').name('Feed');
 
     gui.add(catControls, 'sit').name('Sit/Stand');
+
+    const cursorFolder = gui.addFolder('Cursor Controls');
+    cursorFolder.add(cursorControls, 'showRedDot')
+        .name('Show Red Dot')
+        .onChange((value) => {
+            cursor.visible = value;
+        });
 
     // Create the "Customization" folder
     const customizationFolder = gui.addFolder('Customization');
@@ -726,6 +752,23 @@ function loadObjWithMTL(objPath, MTLpath, scalex, scaley, scalez, posX, posY, po
                 scene.remove(object);
                 objects.splice(objects.indexOf(object), 1);
             }, 1000);
+        });
+    });
+}
+
+function loadRegObjWithMTL(objPath, MTLpath, scalex, scaley, scalez, posX, posY, posZ, rotation){
+    var mtlLoader = new THREE.MTLLoader();
+    mtlLoader.load( MTLpath, function( materials ) {
+        materials.preload();
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials);
+        objLoader.load(objPath, function(object)
+        {
+            obj= object;
+            obj.position.set(posX,posY,posZ);
+            obj.scale.set(scalex,scaley,scalez);
+            obj.rotation.y = rotation ;
+            scene.add( obj );
         });
     });
 }

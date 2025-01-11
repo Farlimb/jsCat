@@ -1,0 +1,22 @@
+# Blender MTL File: 'tree.blend'
+# Material Count: 2
+
+newmtl Bark
+Ns 0.000000
+Ka 0.300000 0.150000 0.075000  # Reduced ambient color for a natural brown
+Kd 0.545000 0.271000 0.075000  # Brown color for bark
+Ks 0.100000 0.050000 0.025000  # Reduced specular highlights for bark
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl Tree_Branch
+Ns 323.999994
+Ka 0.200000 0.400000 0.200000  # Subtle green ambient color
+Kd 0.133000 0.545000 0.133000  # Green color for branches
+Ks 0.300000 0.300000 0.300000  # Slight specular highlights for branches
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
