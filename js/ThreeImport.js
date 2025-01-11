@@ -76,7 +76,7 @@ function addObjects(){
     sphere = new THREE.Mesh( geometrySphere, materialSphere );
     sphere.position.set(0, 0, 0);
     scene.add( sphere );
-
+    scene.add(cursor);
     createCat();
 }
 
@@ -97,6 +97,7 @@ function addLights(){
 
 function update()
 {
+    updateEyesAndCursor();
     controls.update();
     updateStats();
 }

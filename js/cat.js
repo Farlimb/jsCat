@@ -6,8 +6,8 @@ let lastPetTime = 0;
 let petCooldown = 100;
 let obj;
 let objects = [];
-let objAnimation;
-
+//let objAnimation;
+let leftEye, rightEye;
 let isAnimating = false;
 let isSitting = false;
 const animationDuration = 1000; // 1 second
@@ -19,6 +19,23 @@ const catControls = {
     hunger: 0, // Progress property
     comfort: 0
 };
+const cursorControls = {
+    showRedDot: false
+};
+const pupilGeometry = new THREE.SphereGeometry(0.025, 32, 32);
+const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+
+const cursorMaterial = new THREE.SpriteMaterial({ // added sprite here cause it's the only one that worked for me
+    color: 0xff0000,
+    sizeAttenuation: false,
+    depthTest: false,
+    depthWrite: false
+});
+const cursor = new THREE.Sprite(cursorMaterial);
+cursor.scale.set(0.02, 0.02, 1)
+cursor.visible = false;
 
 let progressController;
 let comfortController;
@@ -224,26 +241,22 @@ function createCat() {
     head.add(rightEar);
 
 // Eyes
-    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
     leftEye.position.set(0.35, 0.05, 0.15);
     leftEye.scale.set(1, 1.5, 1);
     head.add(leftEye);
 
-    const rightEye = leftEye.clone();
+    rightEye = leftEye.clone();
     rightEye.position.set(0.35, 0.05, -0.15);
     head.add(rightEye);
 
-    //eye details
-    const highlightGeometry = new THREE.SphereGeometry(0.02, 32, 32);
-    const highlightMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+// Create pupils
+    leftPupil.position.set(0.04, 0, 0);
+    leftEye.add(leftPupil);
 
-    const leftHighlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
-    leftHighlight.position.set(0.02, 0.02, 0.02);
-    leftEye.add(leftHighlight);
 
-    const rightHighlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
-    rightHighlight.position.set(0.02, 0.02, 0.02);
-    rightEye.add(rightHighlight);
+    rightPupil.position.set(0.04, 0, 0);
+    rightEye.add(rightPupil);
 
 //////////////////////// NOSE
     nose.position.set(0.38, -0.05, 0);
@@ -428,9 +441,15 @@ function createCat() {
 
 
     progressController = gui.add(catControls, 'hunger', 0, 100).name('Hunger');
-
+    const cursorFolder = gui.addFolder('Cursor Controls');
+    cursorFolder.add(cursorControls, 'showRedDot')
+        .name('Show Red Dot')
+        .onChange((value) => {
+            cursor.visible = value;
+        });
 
     comfortController = gui.add(catControls, 'comfort', 0, 100).name('Comfort');
+    gui.add({ takeScreenshot }, 'takeScreenshot').name('Take Screenshot');
     // gui.add({ pet: () => {
     //         if (catControls.comfort < 100) {
     //             catControls.comfort += 10;
@@ -447,7 +466,6 @@ function createCat() {
     // Create the "Customization" folder
     const customizationFolder = gui.addFolder('Customization');
 
-// Move the "Cat Texture" and "Environment" controls to the "Customization" folder
     customizationFolder.add(textureControls, 'currentTexture', textureControls.options)
         .name('Cat Texture')
         .onChange(changeTexture);
@@ -548,7 +566,7 @@ function updateStats() {
         progressController.updateDisplay();
     }
     if (catControls.comfort > 0) {
-        catControls.comfort -= 0.005;
+        catControls.comfort -= 0.01;
         comfortController.updateDisplay();
     }
 }
@@ -599,6 +617,16 @@ function onMouseUp(event) {
 function onMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    if (cursorControls.showRedDot) {
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects([plane, ...scene.children], true);
+
+        if (intersects.length > 0) {
+            cursor.position.copy(intersects[0].point);
+            cursor.position.y += 0.001; // Just barely above the surface
+        }
+    }
 }
 
 function checkPetting() {
@@ -707,6 +735,89 @@ function animateObj() {
         objects[i].rotation.y += 0.01;
     }
     requestAnimationFrame(animateObj);
+}
+
+function updateEyesAndCursor() {
+    if (!cursorControls.showRedDot) {
+        cursor.visible = false;
+        // Reset pupils to center
+        if (leftPupil && rightPupil) {
+            leftPupil.position.set(0.04, 0, 0);
+            rightPupil.position.set(0.04, 0, 0);
+        }
+        return;
+    }
+
+    cursor.visible = true;
+
+    if (leftPupil && rightPupil && leftEye && rightEye) {
+        const leftEyePos = new THREE.Vector3();
+        const rightEyePos = new THREE.Vector3();
+        leftEye.getWorldPosition(leftEyePos);
+        rightEye.getWorldPosition(rightEyePos);
+
+        // Get cursor position in world space
+        const cursorWorldPos = cursor.position.clone();
+
+        // Calculate direction vectors in local space
+        const catPosition = new THREE.Vector3();
+        catGroup.getWorldPosition(catPosition);
+
+        // Convert cursor position to cat
+        const localCursor = cursorWorldPos.clone().sub(catPosition);
+
+        // Calculate the relative position (left/right) of the cursor
+        const eyeOffset = 0.06; // Adjust this value to control movement range
+        const centerX = catPosition.x;
+
+        // Calculate normalized offset (-1 to 1)
+        const normalizedX = (localCursor.x - centerX);
+
+        // Apply the offset to pupils
+        const pupilOffset = normalizedX * eyeOffset;
+
+        //leftPupil.position.x = 0.04 + pupilOffset;
+        //rightPupil.position.x = 0.04 + pupilOffset;
+
+        const normalizedY = (localCursor.y - catPosition.y);
+        let verticalOffset = normalizedY * (eyeOffset * 0.5);
+        if(verticalOffset > 0.03){
+            verticalOffset = 0.03;
+        }
+        if(verticalOffset < -0.03){
+            verticalOffset = -0.03;
+        }
+        leftPupil.position.y = verticalOffset;
+        rightPupil.position.y = verticalOffset;
+
+        const normalizedZ = (localCursor.z - catPosition.z);
+        let verticalOffsetZ = normalizedZ * (eyeOffset * 0.5);
+        if(verticalOffsetZ > 0.03){
+            verticalOffsetZ = 0.03;
+        }
+        if(verticalOffsetZ < -0.03){
+            verticalOffsetZ = -0.03;
+        }
+        leftPupil.position.z = verticalOffsetZ;
+        rightPupil.position.z = verticalOffsetZ;
+    }
+}
+
+function takeScreenshot() {
+    renderer.render(scene, camera);
+
+    // Convert the render to a data URL
+    const dataURL = renderer.domElement.toDataURL('image/png');
+
+    // Link
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'cat-screenshot.png';
+
+    // Trigger the download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 animateObj()
