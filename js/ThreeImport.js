@@ -24,6 +24,82 @@ render();
 function init() {
 
     gui = new dat.GUI();
+
+    // Add the styles directly
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Main */
+        .dg.main {
+            background: rgba(0, 0, 0, 0.7) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+        }
+    
+        /* List items and controllers */
+        .dg li:not(.folder) {
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+    
+        .dg li:not(.folder):hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+    
+        /* Text elements */
+        .dg .property-name {
+            color: rgba(255, 255, 255, 0.9) !important;
+            text-shadow: none !important;
+            font-weight: 450;
+        }
+    
+        .dg .title {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+    
+        /* Input fields */
+        .dg .c input[type=text] {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 4px !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            border: none !important;
+            padding: 2px 5px !important;
+        }
+    
+        /* Sliders */
+        .dg .c .slider {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 10px !important;
+            margin-top: 6px !important;
+        }
+    
+        .dg .c .slider-fg {
+            background: rgba(255, 255, 255, 0.5) !important;
+            border-radius: 10px !important;
+        }
+    
+        /* Additional styles for better visibility */
+        .dg .button {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            border-radius: 4px !important;
+        }
+    
+        .dg .close-button {
+            color: rgba(255, 255, 255, 0.9) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+    
+        .dg li.folder {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+    `;
+
+    document.head.appendChild(style);
+
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 1000 );
     camera.position.set(3, 1.3, 1);
 

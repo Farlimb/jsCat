@@ -12,18 +12,6 @@ function init() {
 
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 1000 );
     camera.position.set(0, 0, 5);
-
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
-
-    scene = new THREE.Scene();
-
-    addObjects();
-    addLights();
-
-    controls = new THREE.OrbitControls( camera, renderer.domElement );
-
 }
 
 function render() {
