@@ -2,27 +2,12 @@ var camera, scene, renderer, controls;
 var geometry, material, cube, sphere;
 var spotlight;
 var clock = new THREE.Clock();
-//var keyboard = new THREEx.KeyboardState();
-/*var curve = new THREE.CatmullRomCurve3( [
-    new THREE.Vector3( -5,1,5 ),
-    new THREE.Vector3( 5,1,5 ),
-    new THREE.Vector3( 5,1,-5 ),
-    new THREE.Vector3( -5,1,-5 ),
-], true );
-var points = curve.getPoints( 6 );
-var geometry = new THREE.BufferGeometry().setFromPoints( points );
-var material = new THREE.LineBasicMaterial( { color : 0xff0000 });
-var curveObject = new THREE.Line( geometry, material );*/
-/*var PosIndex = 0;
-
-//var progressController;*/
-
 
 init();
 render();
 
 function init() {
-
+    showSplashScreen();
     gui = new dat.GUI();
 
     // Add the styles directly
@@ -101,11 +86,12 @@ function init() {
     document.head.appendChild(style);
 
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 1000 );
-    camera.position.set(3, 1.3, 1);
+    camera.position.set(4, 2, 0);
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
+
 
     scene = new THREE.Scene();
 
@@ -139,8 +125,8 @@ function addObjects(){
     var materialPlane = new THREE.MeshStandardMaterial( {
         map: floorTexture,
         side: THREE.DoubleSide,
-        roughness : 0.12,
-        metalness: 0.45} );
+        roughness : 1,
+        metalness: 0} );
     plane = new THREE.Mesh( geometryPlane, materialPlane );
     plane.position.set(0, 0.2, 0);
     plane.rotation.x = Math.PI / 2;
@@ -176,4 +162,52 @@ function update()
     updateEyesAndCursor();
     controls.update();
     updateStats();
+}
+
+function showSplashScreen() {
+    const splash = document.createElement('div');
+    splash.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-family: Arial, sans-serif;
+        z-index: 1000;
+    `;
+
+    splash.innerHTML = `
+        <h1 style="margin-bottom: 20px;">Whisker the cat</h1>
+        <div style="text-align: center; line-height: 1.6;">
+            <p>Filip Kušnír, Daniel Štefanka</p>
+            <p>KPI FEI</p>
+            <p>Technická univerzita Košice</p>
+            <p>Počítačová grafika</p>
+            <p>2024/2025</p>
+        </div>
+        <button style="
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        ">Start Application</button>
+    `;
+
+    document.body.appendChild(splash);
+
+    splash.querySelector('button').addEventListener('click', () => {
+        splash.style.opacity = '0';
+        setTimeout(() => {
+            splash.remove();
+        }, 500);
+    });
 }
