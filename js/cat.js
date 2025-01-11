@@ -435,7 +435,7 @@ function createCat() {
     // Add keyboard controls
     document.addEventListener('keydown', (event) => {
         if (event.key === 's') {
-            toggleSit();
+            takeScreenshot();
         }
     });
 
