@@ -489,7 +489,6 @@ function createCat() {
             cursor.visible = value;
         });
 
-    // Create the "Customization" folder
     const customizationFolder = gui.addFolder('Customization');
 
     customizationFolder.add(textureControls, 'currentTexture', textureControls.options)
@@ -805,22 +804,8 @@ function updateEyesAndCursor() {
         // Calculate direction vectors in local space
         const catPosition = new THREE.Vector3();
         catGroup.getWorldPosition(catPosition);
-
-        // Convert cursor position to cat
         const localCursor = cursorWorldPos.clone().sub(catPosition);
-
-        // Calculate the relative position (left/right) of the cursor
         const eyeOffset = 0.06; // Adjust this value to control movement range
-        const centerX = catPosition.x;
-
-        // Calculate normalized offset (-1 to 1)
-        const normalizedX = (localCursor.x - centerX);
-
-        // Apply the offset to pupils
-        const pupilOffset = normalizedX * eyeOffset;
-
-        //leftPupil.position.x = 0.04 + pupilOffset;
-        //rightPupil.position.x = 0.04 + pupilOffset;
 
         const normalizedY = (localCursor.y - catPosition.y);
         let verticalOffset = normalizedY * (eyeOffset * 0.5);

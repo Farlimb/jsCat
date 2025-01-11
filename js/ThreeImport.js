@@ -10,7 +10,6 @@ function init() {
     showSplashScreen();
     gui = new dat.GUI();
 
-    // Add the styles directly
     const style = document.createElement('style');
     style.textContent = `
         /* Main */
@@ -143,18 +142,26 @@ function addObjects(){
 }
 
 function addLights(){
-    var ambientLight = new THREE.AmbientLight(0x7F7F7F);
-    scene.add(ambientLight);
+
 
     spotlight = new THREE.SpotLight('rgb(255,255,255)');
     spotlight.angle = Math.PI;
     spotlight.position.set(0, 4, 2);
-    spotlight.intensity = 2;
+    spotlight.intensity = 0.8;
     spotlight.castShadow = true;
     scene.add(spotlight);
     spotlight.penumbra = 1;
-    var spotLightHelper = new THREE.SpotLightHelper( spotlight );
-    scene.add( spotLightHelper );
+    //var spotLightHelper = new THREE.SpotLightHelper( spotlight );
+    //scene.add( spotLightHelper );
+
+    let spotlight2 = new THREE.SpotLight('rgb(255,255,255)');
+    spotlight2.angle = Math.PI;
+    spotlight2.position.set(8, 4, 0);
+    spotlight2.intensity = 0.8;
+    spotlight2.castShadow = true;
+    scene.add(spotlight2);
+    spotlight2.penumbra = 1;
+
 }
 
 function update()
