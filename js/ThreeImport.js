@@ -9,7 +9,7 @@ render();
 function init() {
     showSplashScreen();
     gui = new dat.GUI();
-
+    setInterval(updateStats, 1000);
     const style = document.createElement('style');
     style.textContent = `
         /* Main */
@@ -168,7 +168,7 @@ function update()
 {
     updateEyesAndCursor();
     controls.update();
-    updateStats();
+    updateMouthShape();
 }
 
 function showSplashScreen() {

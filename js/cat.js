@@ -17,8 +17,8 @@ let meowInterval;
 const catGroup = new THREE.Group();
 const catControls = {
     sit: toggleSit,
-    hunger: 30, // Progress property
-    comfort: 30
+    hunger: 0, // Progress property
+    comfort: 0
 };
 const cursorControls = {
     showRedDot: false
@@ -123,15 +123,13 @@ picLoader.load('sounds/photo.mp3', (buffer) => {
     picSound.setVolume(0.5);
 });
 
-const updateProgress = (food) => {
+function updateProgress(food) {
     if (catControls.hunger < 100) {
         if(food === "apple"){
             catControls.hunger += 10;
-
         }
         else if(food === "milk"){
             catControls.hunger += 20;
-
         }
         else{
             catControls.hunger += 35;
@@ -143,6 +141,7 @@ const updateProgress = (food) => {
     }
 
     progressController.updateDisplay();
+    updateMouthShape();
 }
 
 function updateEnvironment(environmentIndex) {
@@ -169,12 +168,6 @@ function changeEnvironment(enviro) {
 
 function addHeartParticles(position, count = 10) {
     const heartGeometry = new THREE.BufferGeometry();
-    // const heartMaterial = new THREE.PointsMaterial({
-    //     color: 0xFF69B4,
-    //     size: 0.2,
-    //     opacity: 0.8
-    // });
-
     const heartMaterial = new THREE.PointsMaterial({
         map: heartTexture,
         color: 0xFFFFFF,
@@ -319,16 +312,17 @@ function createCat() {
     head.add(nose); // Add to head
 
 //////////////////////// MOUTH
-    const mouthCurve = new THREE.QuadraticBezierCurve3(
-        new THREE.Vector3(0.38, -0.1, -0.1),
-        new THREE.Vector3(0.38, -0.15, 0),
-        new THREE.Vector3(0.38, -0.1, 0.1)
+    let mouthCurve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(0.38, -0.2, -0.1),
+        new THREE.Vector3(0.42, -0.1, 0),
+        new THREE.Vector3(0.38, -0.2, 0.1)
     );
     const mouthPoints = mouthCurve.getPoints(50);
     const mouthGeometry = new THREE.BufferGeometry().setFromPoints(mouthPoints);
     const mouthMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
     const mouth = new THREE.Line(mouthGeometry, mouthMaterial);
-    head.add(mouth); // Add to head
+    mouth.userData.isMouth = true; // Add this line
+    head.add(mouth);
 
 //////////////////////// WHISKERS
 // Add whiskers as children of head since they werent moving
@@ -655,12 +649,53 @@ function toggleSit() {
 
 function updateStats() {
     if (catControls.hunger > 0) {
-        catControls.hunger -= 0.005;
+        catControls.hunger -= 1;
         progressController.updateDisplay();
     }
     if (catControls.comfort > 0) {
-        catControls.comfort -= 0.01;
+        catControls.comfort = catControls.comfort -1;
         comfortController.updateDisplay();
+    }
+    updateMouthShape(); // Add this line
+}
+
+function updateMouthShape() {
+    // Remove existing mouth (only the specific mouth objects)
+    head.children.forEach(child => {
+        if (child instanceof THREE.Line && child.userData.isMouth) {
+            head.remove(child);
+            child.geometry.dispose();
+            child.material.dispose();
+        }
+    });
+
+    // Create new mouth based on conditions
+    if (catControls.hunger === 0 || catControls.comfort === 0) {
+        // Sad mouth (inverted curve)
+        const mouthCurve = new THREE.QuadraticBezierCurve3(
+            new THREE.Vector3(0.38, -0.2, -0.1),
+            new THREE.Vector3(0.42, -0.1, 0),
+            new THREE.Vector3(0.38, -0.2, 0.1)
+        );
+        const mouthPoints = mouthCurve.getPoints(50);
+        const mouthGeometry = new THREE.BufferGeometry().setFromPoints(mouthPoints);
+        const mouthMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+        const mouth = new THREE.Line(mouthGeometry, mouthMaterial);
+        mouth.userData.isMouth = true;
+        head.add(mouth);
+    } else {
+        // Happy mouth (normal curve)
+        const mouthCurve = new THREE.QuadraticBezierCurve3(
+            new THREE.Vector3(0.38, -0.1, -0.1),
+            new THREE.Vector3(0.38, -0.15, 0),
+            new THREE.Vector3(0.38, -0.1, 0.1)
+        );
+        const mouthPoints = mouthCurve.getPoints(50);
+        const mouthGeometry = new THREE.BufferGeometry().setFromPoints(mouthPoints);
+        const mouthMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+        const mouth = new THREE.Line(mouthGeometry, mouthMaterial);
+        mouth.userData.isMouth = true;
+        head.add(mouth);
     }
 }
 
@@ -733,17 +768,16 @@ function checkPetting() {
     if (currentTime - lastPetTime < petCooldown) return;
 
     raycaster.setFromCamera(mouse, camera);
-
     const intersects = raycaster.intersectObjects(catGroup.children, true);
 
     if (intersects.length > 0) {
         if (catControls.comfort < 100) {
             catControls.comfort = Math.min(100, catControls.comfort + 3);
             comfortController.updateDisplay();
+            updateMouthShape(); // Add this line
         }
         lastPetTime = currentTime;
         petCooldown += 100;
-        //ADDED PARTICLE EFFECT, PLEASE CHANGE IT TO STARS OR SOMETHING LATER
         addPettingEffect(intersects[0].point);
     }
 }
