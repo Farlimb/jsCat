@@ -12,12 +12,13 @@ let isAnimating = false;
 let isSitting = false;
 const animationDuration = 1000; // 1 second
 let animationStartTime = 0;
+let meowInterval;
 
 const catGroup = new THREE.Group();
 const catControls = {
     sit: toggleSit,
-    hunger: 0, // Progress property
-    comfort: 0
+    hunger: 30, // Progress property
+    comfort: 30
 };
 const cursorControls = {
     showRedDot: false
@@ -67,6 +68,60 @@ const textureControls = {
     currentEnvironment: 'Outside',
     environments: ['Outside', 'Night out', 'City']
 };
+
+const listener = new THREE.AudioListener();
+const purrSound = new THREE.Audio(listener);
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load('sounds/purr.mp3', (buffer) => {
+    purrSound.setBuffer(buffer);
+    purrSound.setLoop(true);
+    purrSound.setVolume(0.5);
+});
+
+const eatlistener = new THREE.AudioListener();
+const eatSound = new THREE.Audio(eatlistener);
+const eatLoader = new THREE.AudioLoader();
+eatLoader.load('sounds/eat.mp3', (buffer) => {
+    eatSound.setBuffer(buffer);
+    eatSound.setLoop(true);
+    eatSound.setVolume(0.5);
+});
+
+const drinkingListener = new THREE.AudioListener();
+const drinkingSound = new THREE.Audio(drinkingListener);
+const drinkingLoader = new THREE.AudioLoader();
+drinkingLoader.load('sounds/drink.mp3', (buffer) => {
+    drinkingSound.setBuffer(buffer);
+    drinkingSound.setLoop(false);
+    drinkingSound.setVolume(0.5);
+});
+
+const laserListener = new THREE.AudioListener();
+const laserSound = new THREE.Audio(laserListener);
+const laserLoader = new THREE.AudioLoader();
+laserLoader.load('sounds/laser.mp3', (buffer) => {
+    laserSound.setBuffer(buffer);
+    laserSound.setLoop(false);
+    laserSound.setVolume(0.5);
+});
+
+const meowListener = new THREE.AudioListener();
+const meowSound = new THREE.Audio(meowListener);
+const meowLoader = new THREE.AudioLoader();
+meowLoader.load('sounds/meow.mp3', (buffer) => {
+    meowSound.setBuffer(buffer);
+    meowSound.setLoop(false);
+    meowSound.setVolume(0.5);
+});
+
+const picListener = new THREE.AudioListener();
+const picSound = new THREE.Audio(picListener);
+const picLoader = new THREE.AudioLoader();
+picLoader.load('sounds/photo.mp3', (buffer) => {
+    picSound.setBuffer(buffer);
+    picSound.setLoop(false);
+    picSound.setVolume(0.5);
+});
 
 const updateProgress = (food) => {
     if (catControls.hunger < 100) {
@@ -432,6 +487,19 @@ function createCat() {
         originalRender();
     };
 
+    // Function to play the meow sound
+    function playMeowSound() {
+        meowSound.play();
+    }
+
+    function startCatMeowing() {
+        meowInterval = setInterval(playMeowSound, 13000); // Play meow sound every 7 seconds
+    }
+
+
+// Start the cat meowing when the scene is loaded or at some other appropriate time
+    startCatMeowing();
+
     // Add keyboard controls
     document.addEventListener('keydown', (event) => {
         if (event.key === 's') {
@@ -615,6 +683,9 @@ function addPettingEffect(position) {
     const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
     scene.add(particleSystem);
 
+    purrSound.play();
+
+
     // Remove particle after animation
     setTimeout(() => {
         scene.remove(particleSystem);
@@ -636,6 +707,7 @@ function onMouseDown(event) {
 function onMouseUp(event) {
     if (event.button === 0) { // Left mouse button
         isPetting = false;
+        purrSound.stop();
     }
 }
 
@@ -721,9 +793,12 @@ function loadOBJectsStandard(x, y, z, path, scalex, scaley, scalez, texturePath,
         addHeartParticles(catGroup.position, particles);
         updateProgress(food);
 
+        eatSound.play();
+
         // Remove the object after 3 seconds
         setTimeout(() => {
             scene.remove(object);
+            eatSound.stop();
         }, 1000);
 
 
@@ -746,10 +821,13 @@ function loadObjWithMTL(objPath, MTLpath, scalex, scaley, scalez, posX, posY, po
 
             objects.push(object);
 
+            drinkingSound.play();
+
             // Remove the object after 3 seconds
             setTimeout(() => {
                 scene.remove(object);
                 objects.splice(objects.indexOf(object), 1);
+                drinkingSound.stop();
             }, 1000);
         });
     });
@@ -782,6 +860,7 @@ function animateObj() {
 function updateEyesAndCursor() {
     if (!cursorControls.showRedDot) {
         cursor.visible = false;
+        laserSound.stop()
         // Reset pupils to center
         if (leftPupil && rightPupil) {
             leftPupil.position.set(0.04, 0, 0);
@@ -791,6 +870,7 @@ function updateEyesAndCursor() {
     }
 
     cursor.visible = true;
+    laserSound.play()
 
     if (leftPupil && rightPupil && leftEye && rightEye) {
         const leftEyePos = new THREE.Vector3();
@@ -846,6 +926,11 @@ function takeScreenshot() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    picSound.play();
+    setTimeout(() => {
+        picSound.stop();
+    }, 300);
 }
 
 animateObj()
